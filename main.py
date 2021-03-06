@@ -1,3 +1,7 @@
+"""
+Made with <3 by nalinimsingh and mbchang
+"""
+
 from collections import namedtuple
 import os
 import time
@@ -105,7 +109,7 @@ def outer_loss(rng, params, images, num_steps, return_images=False):
 def main():
     config.update("jax_debug_nans", True)
     step_size = 1e-4
-    num_epochs = 500
+    num_epochs = 200
     batch_size = 64
     nrow, ncol = 10, 10  # sampled image grid size
     num_steps = 4
@@ -146,7 +150,7 @@ def main():
                 images, i * batch_size, batch_size)
             return random.bernoulli(rng, batch)
 
-    #@jit
+    @jit
     def run_epoch(rng, opt_state, images):
         def body_fun(i, opt_state):
             elbo_rng, data_rng = random.split(random.fold_in(rng, i))
@@ -172,8 +176,8 @@ def main():
     def image_grid(nrow, ncol, imagevecs, imshape):
         """Reshape a stack of image vectors into an image grid for plotting."""
         images = iter(imagevecs.reshape((-1,) + imshape))
-        return jnp.vstack([jnp.hstack([next(images).T for _ in range(ncol)][::-1])
-                        for _ in range(nrow)]).T
+        return [[next(images).T for _ in range(ncol)][::-1]
+                        for _ in range(nrow)]
 
     opt_state = opt_init(init_params)
     for epoch in range(num_epochs):
@@ -192,8 +196,25 @@ def main():
                 opt_state = opt_update(i, g, opt_state)
 
             test_elbo, logit_images, logvar_norms, elbos = evaluate(opt_state, test_images)
-        plt.imsave(imfile.format(epoch), logit_images, cmap=plt.cm.gray)
 
+        fig, axs = plt.subplots(
+            len(logit_images[0]),
+            len(logit_images), 
+            figsize=(2*len(logit_images),2*len(logit_images[0])),
+            constrained_layout=True)
+        fig.suptitle('Training Epoch: '+str(epoch), fontsize=36)
+        for i in range(len(logit_images[0])):
+            for j in range(len(logit_images)):
+                axs[i][j].imshow(logit_images[j][i].T, cmap=plt.cm.gray)
+                axs[i][j].set_xticks([])
+                axs[i][j].set_yticks([])
+
+        axs[0][0].set_title('Ground Truth', fontsize=20)
+        for k in range(1, len(logit_images)):
+            axs[0][k].set_title('Iter {}'.format(k), fontsize=20)
+
+        plt.savefig(imfile.format(epoch))
+        plt.close()
 
 if __name__=="__main__":        
     main()
