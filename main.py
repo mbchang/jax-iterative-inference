@@ -1,5 +1,7 @@
 """
 Made with <3 by nalinimsingh and mbchang
+
+Adapted from: https://github.com/google/jax/blob/master/examples/mnist_vae.py
 """
 
 from collections import namedtuple
