@@ -4,4 +4,6 @@ Practicing [jax](https://jax.readthedocs.io/en/latest/index.html) through implem
 
 It seems like feeding the input image into refinemenet network helps an enormous amount. It was difficult for us to get it to work without conditioning on the input image.
 
-To run: `python main.py`
+To run: `python main.py`.
+
+To visualize: `python plot_gif.py`
